@@ -145,6 +145,7 @@ def respond_to_app_mention(
         if ENABLE_BUTTONS:
             attachments = [
                 {
+                    "text": ":construction: Work in progress :construction:",
                     "color": "#3AA3E3",
                     "fallback": "Buttons to click on",
                     "callback_id": "attachment_callback",
@@ -403,6 +404,7 @@ def respond_to_new_message(
         if ENABLE_BUTTONS:
             attachments = [
                 {
+                    "text": ":construction: Work in progress :construction:",
                     "color": "#3AA3E3",
                     "fallback": "Buttons to click on",
                     "callback_id": "attachment_callback",
