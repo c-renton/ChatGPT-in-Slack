@@ -1,7 +1,8 @@
+import logging
 import threading
 import time
 import re
-from typing import List, Dict, Any, Generator, Tuple
+from typing import List, Dict, Any, Generator, Tuple, Union
 
 import openai
 from openai.error import Timeout
@@ -110,9 +111,13 @@ def consume_openai_stream_to_write_reply(
     context: BoltContext,
     user_id: str,
     messages: List[Dict[str, str]],
+    attachments: List[Dict[str, str]],
     stream: Generator[OpenAIObject, Any, None],
     timeout_seconds: int,
+    openai_moderation: bool,
+    enable_buttons: bool,
     translate_markdown: bool,
+    logger: logging.Logger,
 ):
     start_time = time.time()
     assistant_reply: Dict[str, str] = {"role": "assistant", "content": ""}
@@ -139,14 +144,38 @@ def consume_openai_stream_to_write_reply(
                             assistant_reply["content"], translate_markdown
                         )
                         wip_reply["message"]["text"] = assistant_reply_text
-                        update_wip_message(
-                            client=client,
-                            channel=context.channel_id,
-                            ts=wip_reply["message"]["ts"],
-                            text=assistant_reply_text + loading_character,
-                            messages=messages,
-                            user=user_id,
-                        )
+
+                        if enable_buttons:
+                            encoding = tiktoken.get_encoding("cl100k_base")
+                            num_tokens = len(
+                                encoding.encode(assistant_reply["content"])
+                            )  # raw tokens from OpenAI before formatting
+                            num_char = len(
+                                assistant_reply_text
+                            )  # number of characters in formatted reply
+                            attachments[0][
+                                "pretext"
+                            ] = f":writing_hand: Generating response... {num_tokens} tokens, {num_char} characters"
+
+                            update_wip_message(
+                                client=client,
+                                channel=context.channel_id,
+                                ts=wip_reply["message"]["ts"],
+                                text=assistant_reply_text,
+                                messages=messages,
+                                attachments=attachments,
+                                user=user_id,
+                            )
+                        else:
+                            update_wip_message(
+                                client=client,
+                                channel=context.channel_id,
+                                ts=wip_reply["message"]["ts"],
+                                text=assistant_reply_text + loading_character,
+                                messages=messages,
+                                attachments=attachments,
+                                user=user_id,
+                            )
 
                     thread = threading.Thread(target=update_message)
                     thread.daemon = True
@@ -165,12 +194,39 @@ def consume_openai_stream_to_write_reply(
             assistant_reply["content"], translate_markdown
         )
         wip_reply["message"]["text"] = assistant_reply_text
+
+        flagged = False
+        if openai_moderation:
+            mod_response = check_moderation(
+                openai_api_key=context.get("OPENAI_API_KEY"), text=assistant_reply_text
+            )
+            logger.debug(mod_response)
+            if mod_response["results"][0]["flagged"]:
+                flagged = True
+
+        if enable_buttons:
+            if flagged:
+                attachments[0][
+                    "pretext"
+                ] = ":warning: This message was flagged as violating the OpenAI usage policy"
+            else:
+                if "pretext" in attachments[0]:
+                    del attachments[0]["pretext"]
+        else:
+            if flagged:
+                assistant_reply_text = (
+                    assistant_reply_text
+                    + "\n\n"
+                    + ":warning: This message was flagged as violating the OpenAI usage policy"
+                )
+
         update_wip_message(
             client=client,
             channel=context.channel_id,
             ts=wip_reply["message"]["ts"],
             text=assistant_reply_text,
             messages=messages,
+            attachments=attachments,
             user=user_id,
         )
     finally:
@@ -184,6 +240,16 @@ def consume_openai_stream_to_write_reply(
             stream.close()
         except Exception:
             pass
+
+
+def check_moderation(
+    openai_api_key: str,
+    text: str,
+) -> Dict[str, Union[str, List]]:
+    return openai.Moderation.create(
+        api_key=openai_api_key,
+        input=text,
+    )
 
 
 def context_length(
