@@ -51,12 +51,16 @@ export OPENAI_TIMEOUT_SECONDS=60
 # Optional: You can include priming instructions for ChatGPT to fine tune the bot purpose
 export OPENAI_SYSTEM_TEXT="You proofread text. When you receive a message, you will check
 for mistakes and make suggestion to improve the language of the given text"
+# Optional: When the string is "true", this app uses the OpenAI moderation API to filter messages that violate the OpenAI usage policy (default: false)
+export OPENAI_MODERATION=true
 # Optional: When the string is "true", this app translates ChatGPT prompts into a user's preferred language (default: true)
 export USE_SLACK_LANGUAGE=true
 # Optional: Adjust the app's logging level (default: DEBUG)
 export SLACK_APP_LOG_LEVEL=INFO
 # Optional: When the string is "true", translate between OpenAI markdown and Slack mrkdwn format (default: false)
 export TRANSLATE_MARKDOWN=true
+# Optional: When the string is "true", enable buttons to keep, regenerate and delete messages posted by bot
+export ENABLE_BUTTONS=true
 # Optional: When the string is "true", perform some basic redaction on propmts sent to OpenAI (default: false)
 export REDACTION_ENABLED=true
 

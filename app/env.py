@@ -22,6 +22,8 @@ OPENAI_TEMPERATURE = float(
     os.environ.get("OPENAI_TEMPERATURE", DEFAULT_OPENAI_TEMPERATURE)
 )
 
+OPENAI_MODERATION = os.environ.get("OPENAI_MODERATION", "false") == "true"
+
 DEFAULT_OPENAI_API_TYPE = None
 OPENAI_API_TYPE = os.environ.get("OPENAI_API_TYPE", DEFAULT_OPENAI_API_TYPE)
 
@@ -41,6 +43,8 @@ USE_SLACK_LANGUAGE = os.environ.get("USE_SLACK_LANGUAGE", "true") == "true"
 SLACK_APP_LOG_LEVEL = os.environ.get("SLACK_APP_LOG_LEVEL", "DEBUG")
 
 TRANSLATE_MARKDOWN = os.environ.get("TRANSLATE_MARKDOWN", "false") == "true"
+
+ENABLE_BUTTONS = os.environ.get("ENABLE_BUTTONS", "false") == "true"
 
 REDACTION_ENABLED = os.environ.get("REDACTION_ENABLED", "false") == "true"
 

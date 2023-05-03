@@ -42,6 +42,7 @@ def post_wip_message(
     thread_ts: str,
     loading_text: str,
     messages: List[Dict[str, str]],
+    attachments: List[Dict[str, str]],
     user: str,
 ) -> SlackResponse:
     system_messages = [msg for msg in messages if msg["role"] == "system"]
@@ -49,6 +50,7 @@ def post_wip_message(
         channel=channel,
         thread_ts=thread_ts,
         text=loading_text,
+        attachments=attachments,
         metadata={
             "event_type": "chat-gpt-convo",
             "event_payload": {"messages": system_messages, "user": user},
@@ -62,6 +64,7 @@ def update_wip_message(
     ts: str,
     text: str,
     messages: List[Dict[str, str]],
+    attachments: List[Dict[str, str]],
     user: str,
 ) -> SlackResponse:
     system_messages = [msg for msg in messages if msg["role"] == "system"]
@@ -69,6 +72,7 @@ def update_wip_message(
         channel=channel,
         ts=ts,
         text=text,
+        attachments=attachments,
         metadata={
             "event_type": "chat-gpt-convo",
             "event_payload": {"messages": system_messages, "user": user},
