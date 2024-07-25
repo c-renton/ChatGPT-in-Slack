@@ -31,6 +31,8 @@ GPT_4_0613_MODEL = "gpt-4-0613"
 GPT_4_32K_MODEL = "gpt-4-32k"
 GPT_4_32K_0314_MODEL = "gpt-4-32k-0314"
 GPT_4_32K_0613_MODEL = "gpt-4-32k-0613"
+GPT_4O_MINI_MODEL = "gpt-4o-mini"
+GPT_4O_MINI_2024_07_18_MODEL = "gpt-4o-mini-2024-07-18"
 
 
 # Format message from Slack to send to OpenAI
@@ -275,6 +277,11 @@ def context_length(
         return 8192
     elif model == GPT_4_32K_0314_MODEL or model == GPT_4_32K_0613_MODEL:
         return 32768
+    elif model == GPT_4O_MINI_2024_07_18_MODEL:
+        return 8192
+    elif model == GPT_4O_MINI_MODEL:
+        # Assuming GPT_4O_MINI_MODEL may change over time. Return context length assuming GPT_4O_MINI_2024_07_18_MODEL.
+        return context_length(model=GPT_4O_MINI_2024_07_18_MODEL)
     else:
         error = f"Calculating the length of the context window for model {model} is not yet supported."
         raise NotImplementedError(error)
@@ -297,6 +304,8 @@ def calculate_num_tokens(
         GPT_4_32K_0314_MODEL,
         GPT_4_0613_MODEL,
         GPT_4_32K_0613_MODEL,
+        GPT_4O_MINI_2024_07_18_MODEL,
+        GPT_4O_MINI_MODEL,
     }:
         tokens_per_message = 3
         tokens_per_name = 1
